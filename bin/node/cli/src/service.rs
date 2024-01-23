@@ -587,6 +587,8 @@ pub fn new_full_base(
 		statement_handler.run(),
 	);
 
+	let ipfs_rt = task_manager.ipfs_rt.clone();
+
 	if enable_offchain_worker {
 		task_manager.spawn_handle().spawn(
 			"offchain-workers-runner",
@@ -595,6 +597,7 @@ pub fn new_full_base(
 				runtime_api_provider: client.clone(),
 				keystore: Some(keystore_container.keystore()),
 				offchain_db: backend.offchain_storage(),
+				ipfs_rt: ipfs_rt.clone(),
 				transaction_pool: Some(OffchainTransactionPoolFactory::new(
 					transaction_pool.clone(),
 				)),
