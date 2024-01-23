@@ -123,6 +123,7 @@ use secp256k1::{
 	ecdsa::{RecoverableSignature, RecoveryId},
 	Message, SECP256K1,
 };
+use sp_core::offchain::{IpfsRequest, IpfsRequestId, IpfsRequestStatus};
 
 #[cfg(feature = "std")]
 use sp_externalities::{Externalities, ExternalitiesExt};
@@ -1518,6 +1519,27 @@ pub trait Offchain {
 			.expect("http_response_read_body can be called only in the offchain worker context")
 			.http_response_read_body(request_id, buffer, deadline)
 			.map(|r| r as u32)
+	}
+
+	/// Initialize an IPFS request
+	fn ipfs_request_start(
+		&mut self,
+		request: IpfsRequest
+	) -> Result<IpfsRequestId, ()> {
+		self.extension::<OffchainWorkerExt>()
+			.expect("ipfs_request_start can only be called in the offchain worker context")
+			.ipfs_request_start(request)
+	}
+
+	/// Block and wait for responses for given requests
+	fn ipfs_response_wait(
+		&mut self,
+		ids: &[IpfsRequestId],
+		deadline: Option<Timestamp>
+	) -> Vec<IpfsRequestStatus> {
+		self.extension::<OffchainWorkerExt>()
+			.expect("ipfs_response_wait can only by called in the offchain worker context")
+			.ipfs_response_wait(ids, deadline)
 	}
 
 	/// Set the authorized nodes and authorized_only flag.
