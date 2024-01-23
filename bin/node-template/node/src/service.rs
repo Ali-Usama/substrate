@@ -183,6 +183,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 			task_manager.spawn_handle(),
 			client.clone(),
 			network.clone(),
+			task_manager.ipfs_rt.clone(),
 		);
 	}
 
