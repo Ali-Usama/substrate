@@ -24,7 +24,8 @@ use crate::{
 	offchain::{
 		self, storage::InMemOffchainStorage, HttpError, HttpRequestId as RequestId,
 		HttpRequestStatus as RequestStatus, OffchainOverlayedChange, OffchainStorage,
-		OpaqueNetworkState, StorageKind, Timestamp, TransactionPool,
+		OpaqueNetworkState, StorageKind, Timestamp, TransactionPool, IpfsRequest, IpfsRequestId,
+		IpfsResponse, IpfsRequestStatus,
 	},
 	OpaquePeerId,
 };
@@ -56,6 +57,13 @@ pub struct PendingRequest {
 	pub read: usize,
 	/// Response headers
 	pub response_headers: Vec<(String, String)>,
+}
+
+/// Pending IPFS request.
+#[derive(Debug, PartialEq, Eq)]
+pub struct IpfsPendingRequest {
+	/// Request id
+	pub id: IpfsRequestId,
 }
 
 /// Sharable "persistent" offchain storage for test.
@@ -128,6 +136,10 @@ pub struct OffchainState {
 	expected_requests: VecDeque<PendingRequest>,
 	/// Persistent local storage
 	pub persistent_storage: TestPersistentOffchainDB,
+	/// A list of pending IPFS requests.
+	pub ipfs_requests: BTreeMap<IpfsRequestId, IpfsPendingRequest>,
+	/// Requests that the test is expected to perform (in order).
+	expected_ipfs_requests: BTreeMap<IpfsRequestId, IpfsPendingRequest>,
 	/// Local storage
 	pub local_storage: InMemOffchainStorage,
 	/// A supposedly random seed.
@@ -348,6 +360,24 @@ impl offchain::Externalities for TestOffchainExt {
 		} else {
 			Err(HttpError::IoError)
 		}
+	}
+
+	fn ipfs_request_start(&mut self, _request: IpfsRequest) -> Result<IpfsRequestId, ()> {
+		let mut state = self.0.write();
+		let id = IpfsRequestId(state.requests.len() as u16);
+		state.ipfs_requests.insert(id, IpfsPendingRequest { id });
+		Ok(id)
+	}
+
+	fn ipfs_response_wait(&mut self, ids: &[IpfsRequestId], _deadline: Option<Timestamp>) -> Vec<IpfsRequestStatus> {
+		let state = self.0.read();
+
+		ids.iter()
+			.map(|id| match state.ipfs_requests.get(id) {
+				Some(_) => IpfsRequestStatus::Finished(IpfsResponse::Success),
+				None => IpfsRequestStatus::Invalid,
+			})
+			.collect()
 	}
 
 	fn set_authorized_nodes(&mut self, _nodes: Vec<OpaquePeerId>, _authorized_only: bool) {
