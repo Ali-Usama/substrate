@@ -100,6 +100,8 @@ pub struct OffchainWorkerOptions<RA, Block: traits::Block, Storage, CE> {
 	///
 	/// Use [`NoOffchainStorage`] as type when passing `None` to have some type that works.
 	pub offchain_db: Option<Storage>,
+	/// Access to ipfs runtime
+	pub ipfs_rt: Arc<Mutex<tokio::runtime::Runtime>>,
 	/// Provides access to the transaction pool.
 	pub transaction_pool: Option<OffchainTransactionPoolFactory<Block>>,
 	/// Provides access to network information.
@@ -133,6 +135,7 @@ pub struct OffchainWorkers<RA, Block: traits::Block, Storage> {
 	shared_http_client: api::SharedClient,
 	enable_http_requests: bool,
 	keystore: Option<KeystorePtr>,
+	ipfs_node: ipfs::Ipfs<ipfs::Types>,
 	offchain_db: Option<OffchainDb<Storage>>,
 	transaction_pool: Option<OffchainTransactionPoolFactory<Block>>,
 	network_provider: Arc<dyn NetworkProvider + Send + Sync>,
@@ -147,6 +150,7 @@ impl<RA, Block: traits::Block, Storage> OffchainWorkers<RA, Block, Storage> {
 			runtime_api_provider,
 			keystore,
 			offchain_db,
+			ipfs_rt,
 			transaction_pool,
 			network_provider,
 			is_validator,
@@ -154,6 +158,21 @@ impl<RA, Block: traits::Block, Storage> OffchainWorkers<RA, Block, Storage> {
 			custom_extensions,
 		}: OffchainWorkerOptions<RA, Block, Storage, CE>,
 	) -> Self {
+		let (ipfs_node, node_info) = std::thread::spawn(move || {
+			let ipfs_rt = ipfs_rt.lock();
+			let options = ipfs::IpfsOptions::inmemory_with_generated_keys();
+			ipfs_rt.block_on(async move {
+				let (ipfs, fut) = ipfs::UninitializedIpfs::new(options).start().await.unwrap();
+				tokio::task::spawn(fut);
+				let node_info = ipfs.identity().await.unwrap();
+				(ipfs, node_info)
+			})
+		}).join().expect("couldn't start IPFS async runtime");
+
+		log::info!(
+			"IPFS: node started with PeerId {} and address {:?}", node_info.0.to_peer_id(), node_info.1
+		);
+
 		Self {
 			runtime_api_provider,
 			thread_pool: Mutex::new(ThreadPool::with_name(
@@ -163,6 +182,7 @@ impl<RA, Block: traits::Block, Storage> OffchainWorkers<RA, Block, Storage> {
 			shared_http_client: api::SharedClient::new(),
 			enable_http_requests,
 			keystore,
+			ipfs_node,
 			offchain_db: offchain_db.map(OffchainDb::new),
 			transaction_pool,
 			is_validator,
@@ -246,6 +266,7 @@ where
 			let (api, runner) = api::AsyncApi::new(
 				self.network_provider.clone(),
 				self.is_validator,
+				self.ipfs_node.clone(),
 				self.shared_http_client.clone(),
 			);
 			tracing::debug!(target: LOG_TARGET, "Spawning offchain workers at {hash:?}");
@@ -434,12 +455,14 @@ mod tests {
 			BasicPool::new_full(Default::default(), true.into(), None, spawner, client.clone());
 		let network = Arc::new(TestNetwork());
 		let header = client.header(client.chain_info().genesis_hash).unwrap().unwrap();
+		let mut ipfs_rt = tokio::runtime::Runtime::new().unwrap();
 
 		// when
 		let offchain = OffchainWorkers::new(OffchainWorkerOptions {
 			runtime_api_provider: client,
 			keystore: None,
 			offchain_db: None::<NoOffchainStorage>,
+			ipfs_rt: Arc::new(Mutex::new(ipfs_rt)),
 			transaction_pool: Some(OffchainTransactionPoolFactory::new(pool.clone())),
 			network_provider: network,
 			is_validator: false,
