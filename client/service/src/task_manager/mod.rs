@@ -332,6 +332,8 @@ pub struct TaskManager {
 	children: Vec<TaskManager>,
 	/// The registry of all running tasks.
 	task_registry: TaskRegistry,
+	/// The executor for Ipfs
+	pub ipfs_rt: Arc<Mutex<tokio::runtime::Runtime>>,
 }
 
 impl TaskManager {
@@ -339,6 +341,7 @@ impl TaskManager {
 	/// service tasks.
 	pub fn new(
 		tokio_handle: Handle,
+		ipfs_rt: tokio::runtime::Runtime,
 		prometheus_registry: Option<&Registry>,
 	) -> Result<Self, PrometheusError> {
 		let (signal, on_exit) = exit_future::signal();
@@ -346,6 +349,8 @@ impl TaskManager {
 		// A side-channel for essential tasks to communicate shutdown.
 		let (essential_failed_tx, essential_failed_rx) =
 			tracing_unbounded("mpsc_essential_tasks", 100);
+
+		let ipfs_rt = Arc::new(Mutex::new(ipfs_rt));
 
 		let metrics = prometheus_registry.map(Metrics::register).transpose()?;
 
@@ -359,6 +364,7 @@ impl TaskManager {
 			keep_alive: Box::new(()),
 			children: Vec::new(),
 			task_registry: Default::default(),
+			ipfs_rt,
 		})
 	}
 
