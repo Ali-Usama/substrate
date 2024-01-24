@@ -23,7 +23,6 @@ codec = { package = "parity-scale-codec", version = "3.2.2", features = ["derive
 fnv = "1.0.6"
 futures = "0.3.21"
 futures-timer = "3.0.2"
-[target.'cfg(not(target_os = "unknown"))'.dependencies]
 hyper = { version = "0.14.16", features = ["stream", "http2"] }
 hyper-rustls = { version = "0.23.0", features = ["http2"] }
 libp2p = "0.51.3"
@@ -51,7 +50,6 @@ sc-transaction-pool = { version = "4.0.0-dev", path = "../transaction-pool" }
 sc-transaction-pool-api = { version = "4.0.0-dev", path = "../transaction-pool/api" }
 sp-consensus = { version = "0.10.0-dev", path = "../../primitives/consensus/common" }
 sp-tracing = { version = "6.0.0", path = "../../primitives/tracing" }
-sc-utils = { version = "4.0.0-dev", path = "../utils" }
 substrate-test-runtime-client = { version = "2.0.0", path = "../../test-utils/runtime/client" }
 
 [features]

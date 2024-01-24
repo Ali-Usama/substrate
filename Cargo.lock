@@ -3772,7 +3772,7 @@ dependencies = [
 [[package]]
 name = "ipfs"
 version = "0.2.1"
-source = "git+https://github.com/rs-ipfs/rust-ipfs#eb8e93553039663016fcb95230f2269ca7155e2a"
+source = "git+https://github.com/rs-ipfs/rust-ipfs?branch=master#eb8e93553039663016fcb95230f2269ca7155e2a"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -3809,7 +3809,7 @@ dependencies = [
 [[package]]
 name = "ipfs-bitswap"
 version = "0.1.0"
-source = "git+https://github.com/rs-ipfs/rust-ipfs#eb8e93553039663016fcb95230f2269ca7155e2a"
+source = "git+https://github.com/rs-ipfs/rust-ipfs?branch=master#eb8e93553039663016fcb95230f2269ca7155e2a"
 dependencies = [
  "cid 0.5.1",
  "fnv",
@@ -3829,7 +3829,7 @@ dependencies = [
 [[package]]
 name = "ipfs-unixfs"
 version = "0.2.0"
-source = "git+https://github.com/rs-ipfs/rust-ipfs#eb8e93553039663016fcb95230f2269ca7155e2a"
+source = "git+https://github.com/rs-ipfs/rust-ipfs?branch=master#eb8e93553039663016fcb95230f2269ca7155e2a"
 dependencies = [
  "cid 0.5.1",
  "either",
@@ -5764,6 +5764,7 @@ dependencies = [
  "frame-system",
  "frame-system-rpc-runtime-api",
  "futures",
+ "ipfs",
  "jsonrpsee",
  "kitchensink-runtime",
  "log",
@@ -5955,6 +5956,7 @@ dependencies = [
  "frame-benchmarking-cli",
  "frame-system",
  "futures",
+ "ipfs",
  "jsonrpsee",
  "node-template-runtime",
  "pallet-transaction-payment",
