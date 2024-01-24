@@ -15,7 +15,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 [dependencies]
 ipfs = { git = "https://github.com/rs-ipfs/rust-ipfs", branch = "master" }
 cid = { version = "0.5.0" }
-tokio =  {version = "1.22.0", features = ["rt-multi-thread", "macros"], default-features = false}
+tokio =  {version = "1.22.0", default-features = false}
 array-bytes = "4.1"
 log = "0.4.0"
 bytes = "1.1"
@@ -23,6 +23,7 @@ codec = { package = "parity-scale-codec", version = "3.2.2", features = ["derive
 fnv = "1.0.6"
 futures = "0.3.21"
 futures-timer = "3.0.2"
+[target.'cfg(not(target_os = "unknown"))'.dependencies]
 hyper = { version = "0.14.16", features = ["stream", "http2"] }
 hyper-rustls = { version = "0.23.0", features = ["http2"] }
 libp2p = "0.51.3"
@@ -44,7 +45,6 @@ sp-runtime = { version = "7.0.0", path = "../../primitives/runtime" }
 
 [dev-dependencies]
 lazy_static = "1.4.0"
-tokio = "1.22.0"
 sc-block-builder = { version = "0.10.0-dev", path = "../block-builder" }
 sc-client-db = { version = "0.10.0-dev", default-features = true, path = "../db" }
 sc-transaction-pool = { version = "4.0.0-dev", path = "../transaction-pool" }
