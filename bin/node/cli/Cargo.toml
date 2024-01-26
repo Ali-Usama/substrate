@@ -34,7 +34,7 @@ required-features = ["cli"]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-ipfs = { git = "https://github.com/rs-ipfs/rust-ipfs", branch = "master" }
+ipfs = { git = "https://github.com/Ali-Usama/rust-ipfs", branch = "master" }
 # third-party dependencies
 array-bytes = "4.1"
 clap = { version = "4.2.5", features = ["derive"], optional = true }
