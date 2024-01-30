@@ -1156,6 +1156,8 @@ pub mod key_types {
 	pub const STATEMENT: KeyTypeId = KeyTypeId(*b"stmt");
 	/// A key type ID useful for tests.
 	pub const DUMMY: KeyTypeId = KeyTypeId(*b"dumy");
+	/// A key type ID used for IPFS modules. built-in. Identified as `ipfs`.
+	pub const IPFS: KeyTypeId = KeyTypeId(*b"ipfs");
 }
 
 #[cfg(test)]
