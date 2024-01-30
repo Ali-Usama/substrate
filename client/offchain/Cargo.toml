@@ -13,7 +13,7 @@ readme = "README.md"
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
-ipfs = { git = "https://github.com/Ali-Usama/rust-ipfs", branch = "master" }
+ipfs = { git = "https://github.com/rs-ipfs/rust-ipfs", branch = "master" }
 cid = { version = "0.5.0" }
 tokio =  {version = "1.22.0", default-features = false}
 array-bytes = "4.1"
