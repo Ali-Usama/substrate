@@ -74,7 +74,7 @@ pub struct OffchainWorkers<Client, Block: traits::Block> {
 	client: Arc<Client>,
 	_block: PhantomData<Block>,
 	thread_pool: Mutex<ThreadPool>,
-	ipfs_node: ipfs::Ipfs<ipfs::Types>,
+	ipfs_node: rust_ipfs::Ipfs,
 	shared_http_client: api::SharedClient,
 	enable_http: bool,
 }
@@ -84,25 +84,25 @@ impl<Client, Block: traits::Block> OffchainWorkers<Client, Block> {
 	pub fn new(client: Arc<Client>, ipfs_rt: Arc<Mutex<tokio::runtime::Runtime>>) -> Self {
 		let (ipfs_node, node_info) = std::thread::spawn(move || {
 			let ipfs_rt = ipfs_rt.lock();
-			let options = ipfs::IpfsOptions::inmemory_with_generated_keys();
+			// let options = rust_ipfs::IpfsOptions::inmemory_with_generated_keys();
 			ipfs_rt.block_on(async move {
 				// Start daemon and initialize repo
-				let (ipfs, fut) = ipfs::UninitializedIpfs::new(options).start().await.unwrap();
-				tokio::task::spawn(fut);
-				let node_info = ipfs.identity().await.unwrap();
+				let ipfs = rust_ipfs::UninitializedIpfsNoop::new().with_default().start().await.unwrap();
+				// tokio::task::spawn(fut);
+				let node_info = ipfs.identity(None).await.unwrap();
 				(ipfs, node_info)
 			})
 		}).join().expect("couldn't start the IPFS async runtime");
 
 		log::info!(
 		    "IPFS: node started with PeerId {} and addresses {:?}",
-		    node_info.0.to_peer_id(), node_info.1
+		    node_info.peer_id, node_info.listen_addrs
 		);
 		Self::new_with_options(client, ipfs_node, OffchainWorkerOptions { enable_http_requests: true })
 	}
 
 	/// Creates new [`OffchainWorkers`] using the given `options`.
-	pub fn new_with_options(client: Arc<Client>, ipfs_node: ipfs::Ipfs<ipfs::Types>, options: OffchainWorkerOptions) -> Self {
+	pub fn new_with_options(client: Arc<Client>, ipfs_node: rust_ipfs::Ipfs, options: OffchainWorkerOptions) -> Self {
 		Self {
 			client,
 			_block: PhantomData,
@@ -210,7 +210,7 @@ where
 	///
 	/// We spawn offchain workers for each block in a separate thread,
 	/// since they can run for a significant amount of time
-	/// in a blocking fashion and we don't want to block the runtime.
+	/// in a blocking fashion, and we don't want to block the runtime.
 	///
 	/// Note that we should avoid that if we switch to future-based runtime in the future,
 	/// alternatively:

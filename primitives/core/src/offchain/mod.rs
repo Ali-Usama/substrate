@@ -263,17 +263,17 @@ pub enum IpfsRequest {
 	/// Get the list of node's peerIds and addresses.
 	Addrs,
 	/// Add the given bytes to the IPFS repo.
-	AddBytes(Vec<u8>),
+	AddBytes(Vec<u8>, u8),
 	/// Add an address to listen on.
 	AddListeningAddr(OpaqueMultiaddr),
-	/// Get the bitswap stats of the node.
-	BitswapStats,
+	// /// Get the bitswap stats of the node.
+	// BitswapStats,
 	/// Get bytes with the given Cid from the IPFS repo and display them.
 	CatBytes(Vec<u8>),
 	/// Connect to an external IPFS node with the specified Multiaddr.
-	Connect(OpaqueMultiaddr),
+	Connect(Vec<u8>),
 	/// Disconnect from an external IPFS node with the specified Multiaddr.
-	Disconnect(OpaqueMultiaddr),
+	Disconnect(Vec<u8>),
 	/// Obtain an IPFS block.
 	GetBlock(Vec<u8>),
 	/// Find the addresses related to the given PeerId.
@@ -300,8 +300,8 @@ pub enum IpfsRequest {
 		message: Vec<u8>
 	},
 	/// Remove a block from the ipfs repo. A pinned block cannot be removed.
-	RemoveBlock(Vec<u8>),
-	/// Remove an address that is listened on.
+	RemoveBlock(Vec<u8>, bool),
+	/// Remove an address listened to on.
 	RemoveListeningAddr(OpaqueMultiaddr),
 	/// Unpins a given Cid recursively or only directly.
 	RemovePin(Vec<u8>, bool),
@@ -320,25 +320,25 @@ pub enum IpfsResponse {
 	Addrs(Vec<(Vec<u8>, Vec<OpaqueMultiaddr>)>),
 	/// The Cid of the added bytes.
 	AddBytes(Vec<u8>),
-	/// A collection of node stats related to the bitswap protocol.
-	BitswapStats {
-		/// The number of blocks sent.
-		blocks_sent: u64,
-		/// The number of bytes sent.
-		data_sent: u64,
-		/// The number of blocks received.
-		blocks_received: u64,
-		/// The number of bytes received.
-		data_received: u64,
-		/// The number of duplicate blocks received.
-		dup_blks_received: u64,
-		/// The number of duplicate bytes received.
-		dup_data_received: u64,
-		/// The list of peers.
-		peers: Vec<Vec<u8>>,
-		/// The list of wanted CIDs and their bitswap priorities.
-		wantlist: Vec<(Vec<u8>, i32)>,
-	},
+	// /// A collection of node stats related to the bitswap protocol.
+	// BitswapStats {
+	// 	/// The number of blocks sent.
+	// 	blocks_sent: u64,
+	// 	/// The number of bytes sent.
+	// 	data_sent: u64,
+	// 	/// The number of blocks received.
+	// 	blocks_received: u64,
+	// 	/// The number of bytes received.
+	// 	data_received: u64,
+	// 	/// The number of duplicate blocks received.
+	// 	dup_blks_received: u64,
+	// 	/// The number of duplicate bytes received.
+	// 	dup_data_received: u64,
+	// 	/// The list of peers.
+	// 	peers: Vec<Vec<u8>>,
+	// 	/// The list of wanted CIDs and their bitswap priorities.
+	// 	wantlist: Vec<(Vec<u8>, i32)>,
+	// },
 	/// The data received from IPFS.
 	CatBytes(Vec<u8>),
 	/// A list of addresses known to be related to a PeerId.

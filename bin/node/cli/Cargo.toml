@@ -33,9 +33,7 @@ required-features = ["cli"]
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-[dependencies]
-ipfs = { git = "https://github.com/rs-ipfs/rust-ipfs", branch = "master" }
-# third-party dependencies
+[dependencies]# third-party dependencies
 array-bytes = "4.1"
 clap = { version = "4.2.5", features = ["derive"], optional = true }
 codec = { package = "parity-scale-codec", version = "3.2.2" }

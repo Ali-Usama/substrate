@@ -309,18 +309,18 @@ impl TryFrom<OpaqueNetworkState> for NetworkState {
 /// Offchain extensions implementation API
 ///
 /// This is the asynchronous processing part of the API.
-pub(crate) struct AsyncApi<I: ::ipfs::IpfsTypes> {
+pub(crate) struct AsyncApi {
 	/// Everything HTTP-related is handled by a different struct.
 	http: Option<http::HttpWorker>,
 	/// Everything IPFS-related is handled by a different struct.
-	ipfs: Option<ipfs::IpfsWorker<I>>
+	ipfs: Option<ipfs::IpfsWorker>
 }
 
-impl<I: ::ipfs::IpfsTypes> AsyncApi<I> {
+impl AsyncApi {
 	/// Creates new Offchain extensions API implementation and the asynchronous processing part.
 	pub fn new(
 		network_provider: Arc<dyn NetworkProvider + Send + Sync>,
-		ipfs_node: ::ipfs::Ipfs<I>,
+		ipfs_node: ::rust_ipfs::Ipfs,
 		is_validator: bool,
 		shared_http_client: SharedClient,
 	) -> (Api, Self) {
@@ -438,10 +438,10 @@ mod tests {
 		let mock = Arc::new(TestNetwork());
 		let shared_client = SharedClient::new();
 
-		let options = ::ipfs::IpfsOptions::default();
+		let options = ::rust_ipfs::IpfsOptions::default();
 		let mut rt = tokio::runtime::Runtime::new().unwrap();
 		let ipfs_node = rt.block_on(async move {
-			let (ipfs, fut) = ::ipfs::UninitializedIpfs::new(options).await.start().await.unwrap();
+			let (ipfs, fut) = ::rust_ipfs::UninitializedIpfs::new(options).await.start().await.unwrap();
 			tokio::task::spawn(fut);
 			ipfs
 		});

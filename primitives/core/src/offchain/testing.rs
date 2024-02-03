@@ -138,8 +138,8 @@ pub struct OffchainState {
 	pub persistent_storage: TestPersistentOffchainDB,
 	/// A list of pending IPFS requests.
 	pub ipfs_requests: BTreeMap<IpfsRequestId, IpfsPendingRequest>,
-	/// Requests that the test is expected to perform (in order).
-	expected_ipfs_requests: BTreeMap<IpfsRequestId, IpfsPendingRequest>,
+	// /// Requests that the test is expected to perform (in order).
+	// expected_ipfs_requests: BTreeMap<IpfsRequestId, IpfsPendingRequest>,
 	/// Local storage
 	pub local_storage: InMemOffchainStorage,
 	/// A supposedly random seed.

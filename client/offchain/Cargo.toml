@@ -13,8 +13,8 @@ readme = "README.md"
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
-ipfs = { git = "https://github.com/rs-ipfs/rust-ipfs", branch = "master" }
-cid = { version = "0.5.0" }
+rust-ipfs = { git = "https://github.com/Ali-Usama/rust-ipfs", branch = "libp2p-next" }
+libipld = "0.16.0"
 tokio =  {version = "1.22.0", default-features = false}
 array-bytes = "4.1"
 log = "0.4.0"
@@ -41,6 +41,7 @@ sp-api = { version = "4.0.0-dev", path = "../../primitives/api" }
 sp-core = { version = "7.0.0", path = "../../primitives/core" }
 sp-offchain = { version = "4.0.0-dev", path = "../../primitives/offchain" }
 sp-runtime = { version = "7.0.0", path = "../../primitives/runtime" }
+tokio-stream = "0.1.14"
 
 [dev-dependencies]
 lazy_static = "1.4.0"
