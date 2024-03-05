@@ -14,6 +14,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
 rust-ipfs = { git = "https://github.com/Ali-Usama/rust-ipfs", branch = "libp2p-next" }
+rust-unixfs = { git = "https://github.com/Ali-Usama/rust-ipfs", branch = "libp2p-next" }
 libipld = "0.16.0"
 tokio =  {version = "1.22.0", default-features = false}
 array-bytes = "4.1"

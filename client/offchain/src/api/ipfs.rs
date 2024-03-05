@@ -13,12 +13,13 @@ use libipld::{Cid, cid};
 use fnv::FnvHashMap;
 use futures::{prelude::*, future};
 use rust_ipfs::{
-    unixfs::{UnixfsStatus, AddOpt},
+    unixfs::{UnixfsStatus, AddOpt, add},
     Block, Ipfs, IpfsPath, Multiaddr, PeerId, PublicKey, SubscriptionStream, MessageId
 };
 use log::error;
 use sp_core::offchain::{IpfsRequest, IpfsRequestId, IpfsRequestStatus, IpfsResponse, OpaqueMultiaddr, Timestamp};
 use std::{convert::TryInto, fmt, mem, pin::Pin, str, task::{Context, Poll}};
+use rust_ipfs::libp2p::swarm::derive_prelude::Either;
 use sc_utils::mpsc::{tracing_unbounded, TracingUnboundedSender, TracingUnboundedReceiver};
 
 
@@ -26,46 +27,50 @@ use sc_utils::mpsc::{tracing_unbounded, TracingUnboundedSender, TracingUnbounded
 async fn ipfs_add(ipfs: &Ipfs, data: Vec<u8>) -> Result<Cid, rust_ipfs::Error> {
     // let cid_version = cid_version_from_raw(version);
     // let data_packed = tokio_stream::once(data).boxed();
-    let data_stream = ipfs.add_unixfs(AddOpt::Stream(
-        stream::once(
+    let add_options = rust_ipfs::unixfs::AddOption {
+        chunk: rust_unixfs::file::adder::Chunker::Size(3 * 1024 * 1024),
+        pin: false,
+        provide: false,
+        wrap: false,
+    };
+    let mut data_stream = add(
+        Either::Left(ipfs),
+        rust_ipfs::unixfs::add::AddOpt::Stream {
+        name: None,
+        total: None,
+        stream: stream::once(
             async { Ok::<_, std::io::Error>(bytes::Bytes::from(data)) })
-            .boxed()
-        )
-    ).await?;
+            .boxed(),
+    }, add_options
+    );
 
     let mut result: Result<Cid, rust_ipfs::Error> = Result::Err(rust_ipfs::Error::msg("Unknown error"));
-    // while let Some(status) = data_stream.next().await {
-    //     match status {
-    //         UnixfsStatus::ProgressStatus {
-    //             written,
-    //             total_size,
-    //         } => match total_size {
-    //             Some(size) => log::info!("{written} out of {size} stored"),
-    //             None => tracing::debug!("{written} been stored"),
-    //         },
-    //         UnixfsStatus::FailedStatus {
-    //             written: _,
-    //             total_size: _,
-    //             error: _,
-    //         } => {
-    //             result = Result::Err(rust_ipfs::Error::msg("Error adding file"))
-    //         }
-    //         UnixfsStatus::CompletedStatus { path, written, total_size } => {
-    //             tracing::info!("{written} been stored with path {path} and total size {:?}", total_size);
-    //             let cid_str = path.to_string().replace("/ipfs/", "");
-    //
-    //             match Cid::try_from(cid_str) {
-    //                 Ok(cid) => result = Ok(cid),
-    //                 Err(_) => result = Err(rust_ipfs::Error::msg("Unable to upload file")),
-    //             }
-    //         }
-    //     }
-    // }
-    tracing::info!("IPFS file path: {:?}", data_stream);
-    let cid_str = data_stream.to_string().replace("/ipfs/", "");
-    match Cid::try_from(cid_str) {
-        Ok(cid) => result = Ok(cid),
-        Err(_) => result = Err(rust_ipfs::Error::msg("Unable to upload file")),
+    while let Some(status) = data_stream.next().await {
+        match status {
+            UnixfsStatus::ProgressStatus {
+                written,
+                total_size,
+            } => match total_size {
+                Some(size) => log::info!("{written} out of {size} stored"),
+                None => tracing::debug!("{written} been stored"),
+            },
+            UnixfsStatus::FailedStatus {
+                written: _,
+                total_size: _,
+                error: _,
+            } => {
+                result = Result::Err(rust_ipfs::Error::msg("Error adding file"))
+            }
+            UnixfsStatus::CompletedStatus { path, written, total_size } => {
+                tracing::info!("{written} been stored with path {path} and total size {:?}", total_size);
+                let cid_str = path.to_string().replace("/ipfs/", "");
+
+                match Cid::try_from(cid_str) {
+                    Ok(cid) => result = Ok(cid),
+                    Err(_) => result = Err(rust_ipfs::Error::msg("Unable to upload file")),
+                }
+            }
+        }
     }
 
     tracing::info!("IPFS add file result: {:?}", result);

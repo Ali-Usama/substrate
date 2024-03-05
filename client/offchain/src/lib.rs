@@ -84,10 +84,20 @@ impl<Client, Block: traits::Block> OffchainWorkers<Client, Block> {
 	pub fn new(client: Arc<Client>, ipfs_rt: Arc<Mutex<tokio::runtime::Runtime>>) -> Self {
 		let (ipfs_node, node_info) = std::thread::spawn(move || {
 			let ipfs_rt = ipfs_rt.lock();
-			// let options = rust_ipfs::IpfsOptions::inmemory_with_generated_keys();
+			let keypair = rust_ipfs::Keypair::generate_ed25519();
 			ipfs_rt.block_on(async move {
 				// Start daemon and initialize repo
-				let ipfs = rust_ipfs::UninitializedIpfsNoop::new().with_default().start().await.unwrap();
+				let ipfs = rust_ipfs::UninitializedIpfsNoop::new()
+					.with_default()
+					.set_keypair(keypair)
+					.fd_limit(rust_ipfs::FDLimit::Custom(10 * 1024 * 1024))
+					.with_mdns()
+					.add_listening_addr("/ip4/0.0.0.0/tcp/0".parse().unwrap())
+					.with_relay(true)
+					.with_relay_server(Default::default())
+					.listen_as_external_addr()
+					.with_upnp()
+					.start().await.unwrap();
 				// tokio::task::spawn(fut);
 				let node_info = ipfs.identity(None).await.unwrap();
 				(ipfs, node_info)
