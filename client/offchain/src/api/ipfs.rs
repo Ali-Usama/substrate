@@ -46,7 +46,7 @@ async fn ipfs_add(ipfs: &Ipfs, data: Vec<u8>) -> Result<Cid, rust_ipfs::Error> {
                 result = Result::Err(rust_ipfs::Error::msg("Error adding file"))
             }
             UnixfsStatus::CompletedStatus { path, written, total_size } => {
-                tracing::info!("{written} been stored with path {path} and total size {total_size}");
+                tracing::info!("{written} been stored with path {path} and total size {:?}", total_size);
                 let cid_str = path.to_string().replace("/ipfs/", "");
 
                 match Cid::try_from(cid_str) {
