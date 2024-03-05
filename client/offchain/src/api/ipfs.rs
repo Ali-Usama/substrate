@@ -13,7 +13,7 @@ use libipld::{Cid, cid};
 use fnv::FnvHashMap;
 use futures::{prelude::*, future};
 use rust_ipfs::{
-    unixfs::UnixfsStatus,
+    unixfs::{UnixfsStatus, AddOpt},
     Block, Ipfs, IpfsPath, Multiaddr, PeerId, PublicKey, SubscriptionStream, MessageId
 };
 use log::error;
@@ -26,7 +26,12 @@ use sc_utils::mpsc::{tracing_unbounded, TracingUnboundedSender, TracingUnbounded
 async fn ipfs_add(ipfs: &Ipfs, data: Vec<u8>) -> Result<Cid, rust_ipfs::Error> {
     // let cid_version = cid_version_from_raw(version);
     // let data_packed = tokio_stream::once(data).boxed();
-    let mut data_stream = ipfs.add_unixfs(data);
+    let mut data_stream = ipfs.add_unixfs(AddOpt::Stream(
+        stream::once(
+            async { Ok::<_, std::io::Error>(bytes::Bytes::from(data)) })
+            .boxed()
+        )
+    );
 
     let mut result: Result<Cid, rust_ipfs::Error> = Result::Err(rust_ipfs::Error::msg("Unknown error"));
     while let Some(status) = data_stream.next().await {
