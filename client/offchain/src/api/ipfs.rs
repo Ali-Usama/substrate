@@ -13,13 +13,12 @@ use libipld::{Cid, cid};
 use fnv::FnvHashMap;
 use futures::{prelude::*, future};
 use rust_ipfs::{
-    unixfs::{UnixfsStatus, AddOpt, add},
+    unixfs::{UnixfsStatus, AddOpt},
     Block, Ipfs, IpfsPath, Multiaddr, PeerId, PublicKey, SubscriptionStream, MessageId
 };
 use log::error;
 use sp_core::offchain::{IpfsRequest, IpfsRequestId, IpfsRequestStatus, IpfsResponse, OpaqueMultiaddr, Timestamp};
 use std::{convert::TryInto, fmt, mem, pin::Pin, str, task::{Context, Poll}};
-use rust_ipfs::libp2p::swarm::derive_prelude::Either;
 use sc_utils::mpsc::{tracing_unbounded, TracingUnboundedSender, TracingUnboundedReceiver};
 
 
@@ -27,22 +26,11 @@ use sc_utils::mpsc::{tracing_unbounded, TracingUnboundedSender, TracingUnbounded
 async fn ipfs_add(ipfs: &Ipfs, data: Vec<u8>) -> Result<Cid, rust_ipfs::Error> {
     // let cid_version = cid_version_from_raw(version);
     // let data_packed = tokio_stream::once(data).boxed();
-    let add_options = rust_ipfs::unixfs::AddOption {
-        chunk: rust_unixfs::file::adder::Chunker::Size(3 * 1024 * 1024),
-        pin: false,
-        provide: false,
-        wrap: false,
-    };
-    let mut data_stream = add(
-        Either::Left(ipfs),
-        rust_ipfs::unixfs::add::AddOpt::Stream {
-        name: None,
-        total: None,
-        stream: stream::once(
-            async { Ok::<_, std::io::Error>(bytes::Bytes::from(data)) })
-            .boxed(),
-    }, add_options
-    );
+    let mut data_stream = ipfs.add_unixfs(AddOpt::Stream(
+        stream::once(
+            async { Ok::<_, std::io::Error>(bytes::Bytes::from(data)) }
+        ).boxed()
+    ));
 
     let mut result: Result<Cid, rust_ipfs::Error> = Result::Err(rust_ipfs::Error::msg("Unknown error"));
     while let Some(status) = data_stream.next().await {
@@ -79,7 +67,7 @@ async fn ipfs_add(ipfs: &Ipfs, data: Vec<u8>) -> Result<Cid, rust_ipfs::Error> {
 
 async fn ipfs_get(ipfs: &Ipfs, path: IpfsPath) -> Result<Vec<u8>, rust_ipfs::Error> {
     let path_copy = path.clone();
-    let stream_result = ipfs.cat_unixfs(path, None).await;
+    let stream_result = ipfs.cat_unixfs(path).await;
     let default_error_msg = "Unable to cat file: ".to_string() + &path_copy.to_string();
 
     let _default_error = rust_ipfs::Error::msg(default_error_msg);
@@ -533,7 +521,7 @@ async fn ipfs_request(ipfs: rust_ipfs::Ipfs, request: IpfsRequest) -> Result<Ipf
             Ok(IpfsNativeResponse::LocalAddrs(ipfs.listening_addresses().await?))
         },
         IpfsRequest::LocalRefs => {
-            Ok(IpfsNativeResponse::LocalRefs(ipfs.refs_local().await?))
+            Ok(IpfsNativeResponse::LocalRefs(ipfs.refs_local().await))
         },
         IpfsRequest::Peers => {
             Ok(IpfsNativeResponse::Peers(ipfs.connected().await?))

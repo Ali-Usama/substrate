@@ -21,7 +21,8 @@ use std::{collections::HashSet, str::FromStr, sync::Arc, thread::sleep};
 use crate::NetworkProvider;
 use codec::{Decode, Encode};
 pub use http::SharedClient;
-use libp2p::{Multiaddr, PeerId};
+// use libp2p::{Multiaddr, PeerId};
+use sc_network::{PeerId, multiaddr::Multiaddr};
 use sp_core::{
 	offchain::{
 		self, HttpError, HttpRequestId, HttpRequestStatus, OffchainStorage, OpaqueMultiaddr,
@@ -346,7 +347,7 @@ impl AsyncApi {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use libp2p::PeerId;
+	use sc_network::PeerId;
 	use sc_client_db::offchain::LocalStorage;
 	use sc_network::{
 		config::MultiaddrWithPeerId, types::ProtocolName, NetworkPeers, NetworkStateInfo,
@@ -424,12 +425,12 @@ mod tests {
 			Vec::new()
 		}
 
-		fn local_peer_id(&self) -> PeerId {
-			PeerId::random()
-		}
-
 		fn listen_addresses(&self) -> Vec<Multiaddr> {
 			Vec::new()
+		}
+
+		fn local_peer_id(&self) -> PeerId {
+			PeerId::random()
 		}
 	}
 

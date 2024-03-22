@@ -85,21 +85,30 @@ impl<Client, Block: traits::Block> OffchainWorkers<Client, Block> {
 		let (ipfs_node, node_info) = std::thread::spawn(move || {
 			let ipfs_rt = ipfs_rt.lock();
 			let keypair = rust_ipfs::Keypair::generate_ed25519();
+			let local_peer_id = keypair.public().to_peer_id();
 			ipfs_rt.block_on(async move {
 				// Start daemon and initialize repo
 				let ipfs = rust_ipfs::UninitializedIpfsNoop::new()
 					.with_default()
-					.set_keypair(keypair)
-					.fd_limit(rust_ipfs::FDLimit::Custom(10 * 1024 * 1024))
+					.set_keypair(&keypair)
+					.fd_limit(rust_ipfs::FDLimit::Max)
 					.with_mdns()
-					.add_listening_addr("/ip4/0.0.0.0/tcp/0".parse().unwrap())
+					.set_default_listener()
+					.swarm_events(|_, event| {
+						if let libp2p::swarm::SwarmEvent::NewListenAddr{ address, .. } = event {
+							log::info!("Listening on {}", address);
+						}
+					})
+					.default_record_key_validator()
 					.with_relay(true)
 					.with_relay_server(Default::default())
 					.listen_as_external_addr()
 					.with_upnp()
-					.start().await.unwrap();
+					.with_rendezvous_server()
+					.start()
+					.await.unwrap();
 				// tokio::task::spawn(fut);
-				let node_info = ipfs.identity(None).await.unwrap();
+				let node_info = ipfs.identity(Some(local_peer_id)).await.unwrap();
 				(ipfs, node_info)
 			})
 		}).join().expect("couldn't start the IPFS async runtime");

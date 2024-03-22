@@ -13,7 +13,7 @@ readme = "README.md"
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
-rust-ipfs = { git = "https://github.com/Ali-Usama/rust-ipfs", branch = "libp2p-next" }
+rust-ipfs = { git = "https://github.com/Ali-Usama/rust-ipfs", branch = "libp2p-next", features = ["experimental_stream"] }
 rust-unixfs = { git = "https://github.com/Ali-Usama/rust-ipfs", branch = "libp2p-next" }
 libipld = "0.16.0"
 tokio =  {version = "1.22.0", default-features = false}
@@ -26,13 +26,42 @@ futures = "0.3.21"
 futures-timer = "3.0.2"
 hyper = { version = "0.14.16", features = ["stream", "http2"] }
 hyper-rustls = { version = "0.23.0", features = ["http2"] }
-libp2p = "0.51.3"
+libp2p = { version = "0.53.2", features = [
+    "gossipsub",
+    "autonat",
+    "relay",
+    "dcutr",
+    "identify",
+    "kad",
+    "websocket",
+    "tcp",
+    "macros",
+    "tokio",
+    "noise",
+    "ping",
+    "yamux",
+    "dns",
+    "mdns",
+    "ed25519",
+    "secp256k1",
+    "ecdsa",
+    "rsa",
+    "serde",
+    "request-response",
+    "json",
+    "cbor",
+    "rendezvous",
+    "upnp",
+    "quic",
+] }
+libp2p-stream = "0.1.0-alpha"
 num_cpus = "1.13"
 once_cell = "1.8"
 parking_lot = "0.12.1"
 rand = "0.8.5"
 threadpool = "1.7"
 tracing = "0.1.29"
+void = { version = "1.0.2", features = ["std"] }
 sc-client-api = { version = "4.0.0-dev", path = "../api" }
 sc-network = { version = "0.10.0-dev", path = "../network" }
 sc-network-common = { version = "0.10.0-dev", path = "../network/common" }
