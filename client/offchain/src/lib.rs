@@ -36,6 +36,7 @@
 #![warn(missing_docs)]
 
 use std::{fmt, marker::PhantomData, sync::Arc};
+use std::str::FromStr;
 
 use futures::{
 	future::{ready, Future},
@@ -85,7 +86,7 @@ impl<Client, Block: traits::Block> OffchainWorkers<Client, Block> {
 		let (ipfs_node, node_info) = std::thread::spawn(move || {
 			let ipfs_rt = ipfs_rt.lock();
 			let keypair = rust_ipfs::Keypair::generate_ed25519();
-			let local_peer_id = keypair.public().to_peer_id();
+			let _local_peer_id = keypair.public().to_peer_id();
 			ipfs_rt.block_on(async move {
 				// Start daemon and initialize repo
 				let ipfs = rust_ipfs::UninitializedIpfsNoop::new()
@@ -105,6 +106,8 @@ impl<Client, Block: traits::Block> OffchainWorkers<Client, Block> {
 					.listen_as_external_addr()
 					.with_upnp()
 					.with_rendezvous_server()
+					.with_bitswap(Default::default())
+					.add_bootstrap(rust_ipfs::Multiaddr::from_str("/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ").unwrap())
 					.start()
 					.await.unwrap();
 				// tokio::task::spawn(fut);

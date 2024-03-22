@@ -193,6 +193,9 @@ name = "anyhow"
 version = "1.0.81"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0952808a6c2afd1aa8947271f3a60f1a6763c7b912d210184c5149b5cf147247"
+dependencies = [
+ "backtrace",
+]
 
 [[package]]
 name = "approx"
@@ -436,6 +439,16 @@ checksum = "9b34d609dfbaf33d6889b2b7106d3ca345eacad44200913df5ba02bfd31d2ba9"
 
 [[package]]
 name = "async-broadcast"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7c48ccdbf6ca6b121e0f586cbc0e73ae440e56c67c30fa0873b4e110d9c26d2b"
+dependencies = [
+ "event-listener 2.5.3",
+ "futures-core",
+]
+
+[[package]]
+name = "async-broadcast"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "334d75cf09b33bede6cbc20e52515853ae7bee3d4eadd9540e13ce92af983d34"
@@ -645,6 +658,42 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3a8241f3ebb85c056b509d4327ad0358fbbba6ffb340bf388f26350aeda225b1"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "beetle-bitswap-next"
+version = "0.5.1"
+source = "git+https://github.com/Ali-Usama/rust-ipfs?branch=libp2p-next#b919731646215f7054b86a08e5b0c5ee5ee96566"
+dependencies = [
+ "ahash 0.8.11",
+ "anyhow",
+ "async-broadcast 0.5.1",
+ "async-channel",
+ "async-stream",
+ "async-trait",
+ "asynchronous-codec 0.6.2",
+ "bytes",
+ "cid 0.10.1",
+ "deadqueue",
+ "derivative",
+ "futures",
+ "futures-util",
+ "keyed_priority_queue",
+ "libp2p 0.53.2",
+ "multihash 0.18.1",
+ "names 0.14.0",
+ "num_enum",
+ "once_cell",
+ "quick-protobuf",
+ "rand 0.8.5",
+ "smallvec",
+ "thiserror",
+ "tokio",
+ "tokio-context",
+ "tokio-stream",
+ "tracing",
+ "unsigned-varint 0.7.2",
+ "wasm-timer",
 ]
 
 [[package]]
@@ -1474,6 +1523,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "crossbeam-queue"
+version = "0.3.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df0346b5d5e76ac2fe4e327c5fd1118d6be7c51dfb18f9b7922923f287471e35"
+dependencies = [
+ "crossbeam-utils",
+]
+
+[[package]]
 name = "crossbeam-utils"
 version = "0.8.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1659,6 +1717,16 @@ checksum = "0047d07f2c89b17dd631c80450d69841a6b5d7fb17278cbc43d7e4cfcf2576f3"
 dependencies = [
  "data-encoding",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "deadqueue"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "16a2561fd313df162315935989dceb8c99db4ee1933358270a57a3cfb8c957f3"
+dependencies = [
+ "crossbeam-queue",
+ "tokio",
 ]
 
 [[package]]
@@ -3837,6 +3905,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "keyed_priority_queue"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ee7893dab2e44ae5f9d0173f26ff4aa327c10b01b06a72b52dd9405b628640d"
+dependencies = [
+ "indexmap 2.2.5",
+]
+
+[[package]]
 name = "kitchensink-runtime"
 version = "3.0.0-dev"
 dependencies = [
@@ -5776,6 +5853,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "names"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7bddcd3bf5144b6392de80e04c347cd7fab2508f6df16a85fc496ecd5cec39bc"
+dependencies = [
+ "rand 0.8.5",
+]
+
+[[package]]
 name = "netlink-packet-core"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6360,6 +6446,27 @@ checksum = "4161fcb6d602d4d2081af7c3a45852d875a03dd337a6bfdd6e06407b61342a43"
 dependencies = [
  "hermit-abi 0.3.9",
  "libc",
+]
+
+[[package]]
+name = "num_enum"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "02339744ee7253741199f897151b38e72257d13802d4ee837285cc2990a90845"
+dependencies = [
+ "num_enum_derive",
+]
+
+[[package]]
+name = "num_enum_derive"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "681030a937600a36906c185595136d26abfebb4aa9c65701cefcaf8578bb982b"
+dependencies = [
+ "proc-macro-crate 1.1.3",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.53",
 ]
 
 [[package]]
@@ -9250,11 +9357,12 @@ version = "0.11.4"
 source = "git+https://github.com/Ali-Usama/rust-ipfs?branch=libp2p-next#b919731646215f7054b86a08e5b0c5ee5ee96566"
 dependencies = [
  "anyhow",
- "async-broadcast",
+ "async-broadcast 0.6.0",
  "async-stream",
  "async-trait",
  "asynchronous-codec 0.7.0",
  "base64 0.21.7",
+ "beetle-bitswap-next",
  "byteorder",
  "bytes",
  "chrono",
@@ -9638,7 +9746,7 @@ dependencies = [
  "futures-timer",
  "libp2p-identity 0.1.3",
  "log",
- "names",
+ "names 0.13.0",
  "parity-scale-codec",
  "rand 0.8.5",
  "regex",
@@ -12945,6 +13053,15 @@ dependencies = [
  "socket2 0.5.6",
  "tokio-macros",
  "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "tokio-context"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eaf0b8394dd5ca9a1b726c629390154c19222dfd7467a4b56f1ced90adee3958"
+dependencies = [
+ "tokio",
 ]
 
 [[package]]
