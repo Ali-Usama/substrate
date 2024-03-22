@@ -108,7 +108,7 @@ impl<Client, Block: traits::Block> OffchainWorkers<Client, Block> {
 					.start()
 					.await.unwrap();
 				// tokio::task::spawn(fut);
-				let node_info = ipfs.identity(Some(local_peer_id)).await.unwrap();
+				let node_info = ipfs.identity(None).await.unwrap();
 				(ipfs, node_info)
 			})
 		}).join().expect("couldn't start the IPFS async runtime");
