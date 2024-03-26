@@ -110,6 +110,7 @@ impl<Client, Block: traits::Block> OffchainWorkers<Client, Block> {
 					.add_bootstrap(rust_ipfs::Multiaddr::from_str("/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ").unwrap())
 					.start()
 					.await.unwrap();
+				ipfs.bootstrap().await.unwrap();
 				// tokio::task::spawn(fut);
 				let node_info = ipfs.identity(None).await.unwrap();
 				(ipfs, node_info)
