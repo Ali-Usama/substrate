@@ -61,7 +61,7 @@ async fn ipfs_add(ipfs: &Ipfs, data: Vec<u8>) -> Result<Cid, rust_ipfs::Error> {
         }
     }
 
-    tracing::info!("IPFS add file result:", result);
+    tracing::info!("IPFS add file result: {:?}", result);
     result
 }
 
