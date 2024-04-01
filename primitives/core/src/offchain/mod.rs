@@ -270,6 +270,8 @@ pub enum IpfsRequest {
 	// BitswapStats,
 	/// Get bytes with the given Cid from the IPFS repo and display them.
 	CatBytes(Vec<u8>),
+
+	PublishIpns(Vec<u8>),
 	/// Connect to an external IPFS node with the specified Multiaddr.
 	Connect(Vec<u8>),
 	/// Disconnect from an external IPFS node with the specified Multiaddr.
@@ -297,7 +299,7 @@ pub enum IpfsRequest {
 		/// The topic to publish the message to.
 		topic: Vec<u8>,
 		/// The message to publish.
-		message: Vec<u8>
+		message: Vec<u8>,
 	},
 	/// Remove a block from the ipfs repo. A pinned block cannot be removed.
 	RemoveBlock(Vec<u8>, bool),
@@ -362,7 +364,9 @@ pub enum IpfsResponse {
 }
 
 /// Opaque type for offchain IPFS requests.
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, RuntimeDebug, Encode, Decode, PassByInner)]
+#[derive(
+	Clone, Copy, PartialEq, Eq, PartialOrd, Ord, RuntimeDebug, Encode, Decode, PassByInner,
+)]
 #[cfg_attr(feature = "std", derive(Hash))]
 pub struct IpfsRequestId(pub u16);
 
@@ -563,7 +567,7 @@ pub trait Externalities: Send {
 	fn ipfs_response_wait(
 		&mut self,
 		ids: &[IpfsRequestId],
-		deadline: Option<Timestamp>
+		deadline: Option<Timestamp>,
 	) -> Vec<IpfsRequestStatus>;
 
 	/// Set the authorized nodes from runtime.
@@ -652,7 +656,11 @@ impl<T: Externalities + ?Sized> Externalities for Box<T> {
 		(&mut **self).ipfs_request_start(request)
 	}
 
-	fn ipfs_response_wait(&mut self, ids: &[IpfsRequestId], deadline: Option<Timestamp>) -> Vec<IpfsRequestStatus> {
+	fn ipfs_response_wait(
+		&mut self,
+		ids: &[IpfsRequestId],
+		deadline: Option<Timestamp>,
+	) -> Vec<IpfsRequestStatus> {
 		(&mut **self).ipfs_response_wait(ids, deadline)
 	}
 
@@ -768,7 +776,11 @@ impl<T: Externalities> Externalities for LimitedExternalities<T> {
 		self.externalities.ipfs_request_start(request)
 	}
 
-	fn ipfs_response_wait(&mut self, ids: &[IpfsRequestId], deadline: Option<Timestamp>) -> Vec<IpfsRequestStatus> {
+	fn ipfs_response_wait(
+		&mut self,
+		ids: &[IpfsRequestId],
+		deadline: Option<Timestamp>,
+	) -> Vec<IpfsRequestStatus> {
 		self.check(Capabilities::IPFS, "ipfs_response_wait");
 		self.externalities.ipfs_response_wait(ids, deadline)
 	}

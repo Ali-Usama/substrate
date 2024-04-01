@@ -65,11 +65,11 @@ async fn ipfs_add(ipfs: &Ipfs, data: Vec<u8>) -> Result<Cid, rust_ipfs::Error> {
     result
 }
 
-async fn ipfs_ipns(ipfs: &Ipfs, cid: Cid) -> Result<IpfsPath, rust_ipfs::Error> {
+async fn ipfs_ipns(ipfs: &Ipfs, path: IpfsPath) -> Result<IpfsPath, rust_ipfs::Error> {
     // let cid_version = cid_version_from_raw(version);
     // let data_packed = tokio_stream::once(data).boxed();
-    let ipfs_path = IpfsPath::from(cid);
-    let result = ipfs.publish_ipns(&ipfs_path).await?;
+    //let ipfs_path = IpfsPath::from(cid);
+    let result = ipfs.publish_ipns(&path).await?;
 
     tracing::info!("IPFS been published to: {:?}", result);
     Ok(result)
@@ -347,6 +347,7 @@ pub enum IpfsNativeResponse {
     AddListeningAddr(Multiaddr),
     // BitswapStats(BitswapStats),
     CatBytes(Vec<u8>),
+    PublishIpns(IpfsPath),
     Connect(()),
     Disconnect(()),
     FindPeer(Vec<Multiaddr>),
@@ -488,6 +489,10 @@ async fn ipfs_request(ipfs: rust_ipfs::Ipfs, request: IpfsRequest) -> Result<Ipf
         IpfsRequest::CatBytes(cid) => {
             let data = ipfs_get(&ipfs, str::from_utf8(&cid)?.parse::<IpfsPath>()?).await?;
             Ok(IpfsNativeResponse::CatBytes(data))
+        },
+        IpfsRequest::PublishIpns(cid) => {
+            let data = ipfs_ipns(&ipfs, str::from_utf8(&cid)?.parse::<IpfsPath>()?).await?;
+            Ok(IpfsNativeResponse::PublishIpns(data))
         },
         IpfsRequest::Connect(addr) => {
             let peer_id = str::from_utf8(&addr)?.parse::<PeerId>()?;
