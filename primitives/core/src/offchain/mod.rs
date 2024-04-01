@@ -343,6 +343,7 @@ pub enum IpfsResponse {
 	// },
 	/// The data received from IPFS.
 	CatBytes(Vec<u8>),
+	PublishIpns(Vec<u8>),
 	/// A list of addresses known to be related to a PeerId.
 	FindPeer(Vec<OpaqueMultiaddr>),
 	/// The list of PeerIds closest to the given PeerId.
