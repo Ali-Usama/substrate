@@ -9,14 +9,14 @@
 //! in the background even if the runtime isn't actively calling any function.
 
 use crate::api::timestamp;
-use libipld::{Cid, cid};
 use fnv::FnvHashMap;
-use futures::{prelude::*, future};
+use futures::{future, prelude::*};
+use libipld::{cid, Cid};
+use log::error;
 use rust_ipfs::{
     unixfs::{UnixfsStatus, AddOpt},
     Block, Ipfs, IpfsPath, Multiaddr, PeerId, PublicKey, SubscriptionStream, MessageId
 };
-use log::error;
 use sp_core::offchain::{IpfsRequest, IpfsRequestId, IpfsRequestStatus, IpfsResponse, OpaqueMultiaddr, Timestamp};
 use std::{convert::TryInto, fmt, mem, pin::Pin, str, task::{Context, Poll}};
 use sc_utils::mpsc::{tracing_unbounded, TracingUnboundedSender, TracingUnboundedReceiver};
@@ -61,10 +61,19 @@ async fn ipfs_add(ipfs: &Ipfs, data: Vec<u8>) -> Result<Cid, rust_ipfs::Error> {
         }
     }
 
-    tracing::info!("IPFS add file result: {:?}", result);
+    tracing::info!("IPFS add file result:", result);
     result
 }
 
+async fn ipfs_ipns(ipfs: &Ipfs, cid: Cid) -> Result<IpfsPath, rust_ipfs::Error> {
+    // let cid_version = cid_version_from_raw(version);
+    // let data_packed = tokio_stream::once(data).boxed();
+    let ipfs_path = IpfsPath::from(cid);
+    let result = ipfs.publish_ipns(&ipfs_path).await?;
+
+    tracing::info!("IPFS been published to: {:?}", result);
+    Ok(result)
+}
 async fn ipfs_get(ipfs: &Ipfs, path: IpfsPath) -> Result<Vec<u8>, rust_ipfs::Error> {
     let path_copy = path.clone();
     let stream_result = ipfs.cat_unixfs(path).await;
